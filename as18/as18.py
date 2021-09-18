@@ -67,7 +67,7 @@ for i in range(N):
     print(point)
     points.append(point)
 
-# Perform one iteration
+# Perform iterations
 for i in range(iters):
     new_points = iter(points)
     print('New Points:')
