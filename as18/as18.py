@@ -1,5 +1,6 @@
 from lattice import Lattice, LatticePoint
 import numpy as np
+from numpy import linalg as LA
 
 def avg(p1, p2):
     # Take the average of two lattice points, provided that they are in the same
@@ -7,6 +8,20 @@ def avg(p1, p2):
     coords = np.mean([p1.coords, p2.coords], axis=0)
     pt = LatticePoint(p1.lattice, coords)
     return pt
+
+def diff_avg(p1, p2):
+    # Take the difference average
+    coords = (p1.coords - p2.coords) / 2
+    pt = LatticePoint(p1.lattice, coords)
+    return pt
+
+def shortest(points):
+    # Find the shortest vector
+    shortest_vec = points[0]
+    for point in points:
+        if LA.norm(point.vec) < LA.norm(shortest_vec.vec):
+            shortest_vec = point
+    return shortest_vec
 
 def iter(points):
     # Perform one iteration
@@ -46,8 +61,10 @@ def iter(points):
     for p1, p2 in pairs:
         # print(p1, p2)
         new_pt = avg(p1, p2)
+        new_pt_2 = diff_avg(p1, p2)
         # print(new_pt)
         new_points.append(new_pt)
+        new_points.append(new_pt_2)
 
     return new_points
 
@@ -55,7 +72,7 @@ def iter(points):
 basis = np.array([[1, 0], [0, 1]])
 lattice = Lattice(basis)
 N = 100
-iters = 10
+iters = 100
 
 ### Full algorithm
 
@@ -70,6 +87,7 @@ for i in range(N):
 # Perform one iteration
 for i in range(iters):
     new_points = iter(points)
-    print('New Points:')
-    for point in new_points:
-        print(point)
+    # print('New Points:')
+    # for point in new_points:
+    #     print(point)
+print(shortest(new_points))

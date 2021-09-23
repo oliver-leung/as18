@@ -8,6 +8,7 @@ class Lattice:
     def generate(self, max_digits=3):
         coords = np.random.rand(self.dim)
         coords = np.round(coords * 10**max_digits)
+        coords -= (10**max_digits)/2
         coords = coords.astype(int)
 
         return LatticePoint(self, coords)
@@ -26,3 +27,7 @@ class LatticePoint:
     @property
     def vec(self):
         return self.lattice.basis @ self.coords
+
+    @property
+    def norm(self):
+        return np.linalg.norm(self.vec)
