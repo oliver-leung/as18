@@ -8,7 +8,7 @@ def avg(p1: LatticePoint, p2: LatticePoint) -> LatticePoint:
     """Take the average of two lattice points, provided that they are in the
     same coset.
     """
-    assert np.array_equal(p1.basis, p2.basis) # Naive lattice equality check
+    assert np.array_equal(p1.basis, p2.basis)  # Naive lattice equality check
 
     coords = np.mean([p1.coords, p2.coords], axis=0)
     # TODO: Check if coords are still integers.
@@ -35,7 +35,8 @@ def shortest(points: List[LatticePoint]) -> LatticePoint:
     dim = points[0].dim
     zeros = np.zeros(dim)
 
-    nonzero_points = [point for point in points if not np.array_equal(point.vec, zeros)]
+    nonzero_points = [
+        point for point in points if not np.array_equal(point.vec, zeros)]
     nonzero_points_norms = [point.norm for point in nonzero_points]
     shortest_point_arg = np.argmin(nonzero_points_norms)
     shortest_point = nonzero_points[shortest_point_arg]
@@ -43,8 +44,8 @@ def shortest(points: List[LatticePoint]) -> LatticePoint:
     return shortest_point
 
 
-def iter(points):
-    # Perform one iteration
+def as18_iter(points: List[LatticePoint]) -> List[LatticePoint]:
+    """Perform one iteration of the averaging algorithm."""
     cp_to_vec = {}
 
     # Bin according to mod 2L
@@ -89,37 +90,26 @@ def iter(points):
     return new_points
 
 
-# Initial parameters
-# basis = np.array([[1, 0], [0, 1]])
-# lattice = Lattice(basis)
-dim = 2
-lattice = IntegerLattice(dim)
-N = 1000
-iters = 50
+def as_18(dim=2, N=1000, iters=50) -> LatticePoint:
+    lattice = IntegerLattice(dim)
 
-# Full algorithm
+    points = [lattice.sample_dgd() for _ in range(N)]
+    # print('Points:\n', [point for point in points])
 
-points = []
-print('Points:')
-# Generate uniform distribution of points with coordinates less than 1000
-for i in range(N):
-    point = lattice.sample_dgd()
-    print(point)
-    points.append(point)
+    # Perform iterations
+    for _ in range(iters):
+        new_points = as18_iter(points)
+        new_points_norms = [pt.norm ** 2 for pt in new_points]
+        # print('Average of square norms:', np.mean(new_points_norms))
+        # print('New Points:', [point for point in new_points])
 
-# Perform iterations
-for i in range(iters):
-    new_points = iter(points)
+        if np.mean(new_points_norms) == 0:
+            break
+        points = new_points
 
-    new_points_norms = [LA.norm(pt.vec) ** 2 for pt in new_points]
-    print('avg of sq norms:', np.mean(new_points_norms))
-    # print('New Points:')
-    # for point in new_points:
-    #     print(point)
+    return shortest(points)
 
-    if np.mean(new_points_norms) == 0:
-        break
 
-    points = new_points
-
-print(shortest(points))
+if __name__ == '__main__':
+    shortest_point = as_18()
+    print(shortest_point)
