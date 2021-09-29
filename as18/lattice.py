@@ -12,6 +12,7 @@ class LatticePoint:
     def __init__(self, basis: np.ndarray, coords: np.ndarray):
         self.basis = basis
         self.coords = coords
+        self.dim = coords.size
 
     def __repr__(self):
         return str(self.vec)
@@ -19,7 +20,7 @@ class LatticePoint:
     def __str__(self):
         return self.__repr__()
 
-    def __eq__(self, other: LatticePoint):
+    def __eq__(self, other):
         return np.array_equal(self.vec, other.vec)
 
     @property
@@ -74,7 +75,7 @@ class IntegerLattice(Lattice):
         coords = [self._sample_dgd_single(s, t) for _ in range(self.dim)]
         coords_np = np.array(coords)
 
-        return LatticePoint(self, coords_np)
+        return LatticePoint(self.basis, coords_np)
 
     def _sample_dgd_single(self, s=10, t=5) -> int:
         """Sample a single coordinate for the Discrete Gaussian."""

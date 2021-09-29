@@ -1,32 +1,47 @@
 from lattice import Lattice, LatticePoint, IntegerLattice
 import numpy as np
 from numpy import linalg as LA
+from typing import List
 
-def avg(p1, p2):
-    # Take the average of two lattice points, provided that they are in the same
-    # coset
+
+def avg(p1: LatticePoint, p2: LatticePoint) -> LatticePoint:
+    """Take the average of two lattice points, provided that they are in the
+    same coset.
+    """
+    assert np.array_equal(p1.basis, p2.basis) # Naive lattice equality check
+
     coords = np.mean([p1.coords, p2.coords], axis=0)
-    pt = LatticePoint(p1.lattice, coords)
-    return pt
+    # TODO: Check if coords are still integers.
+    point = LatticePoint(p1.basis, coords)
 
-def diff_avg(p1, p2):
-    # Take the difference average
+    return point
+
+
+def diff_avg(p1: LatticePoint, p2: LatticePoint) -> LatticePoint:
+    """Take the "difference average" of two lattice points, provided that they
+    are in the same coset.
+    """
+    assert np.array_equal(p1.basis, p2.basis)  # Naive lattice equality check
+
     coords = (p1.coords - p2.coords) / 2
-    pt = LatticePoint(p1.lattice, coords)
-    return pt
+    # TODO: Check if coords are still integers.
+    point = LatticePoint(p1.basis, coords)
 
-def shortest(points):
-    # Find the shortest vector
-    shortest_vec = None
-    dim = points[0].vec.size
-    for point in points:
-        # print(point)
-        if (point.vec != np.zeros(dim)).any():
-            shortest_vec = point
-        elif shortest_vec is not None:
-            if point.norm < shortest_vec.norm:
-                shortest_vec = point
-    return shortest_vec
+    return point
+
+
+def shortest(points: List[LatticePoint]) -> LatticePoint:
+    """Find the shortest point within a list of points."""
+    dim = points[0].dim
+    zeros = np.zeros(dim)
+
+    nonzero_points = [point for point in points if not np.array_equal(point.vec, zeros)]
+    nonzero_points_norms = [point.norm for point in nonzero_points]
+    shortest_point_arg = np.argmin(nonzero_points_norms)
+    shortest_point = nonzero_points[shortest_point_arg]
+
+    return shortest_point
+
 
 def iter(points):
     # Perform one iteration
@@ -73,6 +88,7 @@ def iter(points):
 
     return new_points
 
+
 # Initial parameters
 # basis = np.array([[1, 0], [0, 1]])
 # lattice = Lattice(basis)
@@ -81,7 +97,7 @@ lattice = IntegerLattice(dim)
 N = 1000
 iters = 50
 
-### Full algorithm
+# Full algorithm
 
 points = []
 print('Points:')
