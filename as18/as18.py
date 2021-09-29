@@ -2,6 +2,7 @@ from lattice import Lattice, LatticePoint, IntegerLattice
 import numpy as np
 from numpy import linalg as LA
 from typing import List
+from time import time
 
 
 def avg(p1: LatticePoint, p2: LatticePoint) -> LatticePoint:
@@ -32,6 +33,7 @@ def diff_avg(p1: LatticePoint, p2: LatticePoint) -> LatticePoint:
 
 def shortest(points: List[LatticePoint]) -> LatticePoint:
     """Find the shortest point within a list of points."""
+    # print([point for point in points])
     dim = points[0].dim
     zeros = np.zeros(dim)
 
@@ -90,20 +92,24 @@ def as18_iter(points: List[LatticePoint]) -> List[LatticePoint]:
     return new_points
 
 
-def as_18(dim=2, N=1000, iters=50) -> LatticePoint:
+def as_18(dim=2, N=1000, max_iters=50) -> LatticePoint:
     lattice = IntegerLattice(dim)
 
     points = [lattice.sample_dgd() for _ in range(N)]
     # print('Points:\n', [point for point in points])
 
     # Perform iterations
-    for _ in range(iters):
+    for _ in range(max_iters):
         new_points = as18_iter(points)
+        if new_points == []:
+            print('Warning: did not start with enough points')
+            break
         new_points_norms = [pt.norm ** 2 for pt in new_points]
-        # print('Average of square norms:', np.mean(new_points_norms))
+        new_points_norms_means = np.mean(new_points_norms)
+        print('Average of square norms:', new_points_norms_means)
         # print('New Points:', [point for point in new_points])
 
-        if np.mean(new_points_norms) == 0:
+        if new_points_norms_means == 0:
             break
         points = new_points
 
@@ -111,5 +117,7 @@ def as_18(dim=2, N=1000, iters=50) -> LatticePoint:
 
 
 if __name__ == '__main__':
-    shortest_point = as_18()
-    print(shortest_point)
+    start = time()
+    shortest_point = as_18(dim=10, N=10000, max_iters=1000)
+    print('Shortest point:', shortest_point)
+    print('Took', time() - start, 'seconds')
