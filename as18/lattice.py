@@ -42,6 +42,9 @@ class LatticePoint:
     def __eq__(self, other):
         return self.coords == other.coords
 
+    def __call__(self):
+        ...
+
     @property
     def vec(self):
         return self.lattice.basis @ self.coords

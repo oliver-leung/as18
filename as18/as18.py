@@ -17,10 +17,15 @@ def diff_avg(p1, p2):
 
 def shortest(points):
     # Find the shortest vector
-    shortest_vec = points[0]
+    shortest_vec = None
+    dim = points[0].vec.size
     for point in points:
-        if LA.norm(point.vec) < LA.norm(shortest_vec.vec):
+        # print(point)
+        if (point.vec != np.zeros(dim)).any():
             shortest_vec = point
+        elif shortest_vec is not None:
+            if point.norm < shortest_vec.norm:
+                shortest_vec = point
     return shortest_vec
 
 def iter(points):
@@ -74,7 +79,7 @@ def iter(points):
 dim = 2
 lattice = IntegerLattice(dim)
 N = 1000
-iters = 100
+iters = 50
 
 ### Full algorithm
 
@@ -96,6 +101,9 @@ for i in range(iters):
     # for point in new_points:
     #     print(point)
 
+    if np.mean(new_points_norms) == 0:
+        break
+
     points = new_points
 
-print(shortest(new_points))
+print(shortest(points))
