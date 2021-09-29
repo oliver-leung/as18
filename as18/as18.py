@@ -1,4 +1,4 @@
-from lattice import Lattice, LatticePoint
+from lattice import Lattice, LatticePoint, IntegerLattice
 import numpy as np
 from numpy import linalg as LA
 
@@ -55,7 +55,7 @@ def iter(points):
             pairs.append(pair)
 
         # optionally keep unpaired vectors
-        new_points += val
+        # new_points += val
 
     # Get the average of each pair
     for p1, p2 in pairs:
@@ -69,9 +69,11 @@ def iter(points):
     return new_points
 
 # Initial parameters
-basis = np.array([[1, 0], [0, 1]])
-lattice = Lattice(basis)
-N = 100
+# basis = np.array([[1, 0], [0, 1]])
+# lattice = Lattice(basis)
+dim = 2
+lattice = IntegerLattice(dim)
+N = 1000
 iters = 100
 
 ### Full algorithm
@@ -80,14 +82,20 @@ points = []
 print('Points:')
 # Generate uniform distribution of points with coordinates less than 1000
 for i in range(N):
-    point = lattice.generate()
+    point = lattice.sample_dgd()
     print(point)
     points.append(point)
 
 # Perform iterations
 for i in range(iters):
     new_points = iter(points)
+
+    new_points_norms = [LA.norm(pt.vec) ** 2 for pt in new_points]
+    print('avg of sq norms:', np.mean(new_points_norms))
     # print('New Points:')
     # for point in new_points:
     #     print(point)
+
+    points = new_points
+
 print(shortest(new_points))
