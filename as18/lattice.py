@@ -1,54 +1,86 @@
 import numpy as np
-from random import randint
+from random import randint, random
+from abc import ABC
 
-class Lattice:
-    def __init__(self, basis):
+def lin_ind(basis: np.ndarray) -> bool:
+    """Returns whether the input basis is linearly independent. (Unimplemented)"""
+    return False
+
+class LatticePoint:
+    # TODO: Allow instantiation from just a vector and a basis, ensuring that
+    # that the vector actually is in the lattice.
+    def __init__(self, basis: np.ndarray, coords: np.ndarray):
+        self.basis = basis
+        self.coords = coords
+
+    def __repr__(self):
+        return str(self.vec)
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __eq__(self, other: LatticePoint):
+        return np.array_equal(self.vec, other.vec)
+
+    @property
+    def vec(self) -> np.ndarray:
+        return self.basis @ self.coords
+
+    @property
+    def norm(self) -> float:
+        return np.linalg.norm(self.vec)
+
+class Lattice(ABC):
+    """An abstract class representing a lattice."""
+
+    # TODO: Ensure that the basis is linearly independent and is square.
+    def __init__(self, basis: np.ndarray):
+        """Instantiate a Lattice given by a [basis]."""
         self.basis = basis
         self.dim = basis.shape[0]
 
-    def sample_uniform(self, max_digits=3):
-        coords = np.random.rand(self.dim)
-        coords = np.round(coords * 10**max_digits)
-        coords -= (10**max_digits)/2
-        coords = coords.astype(int)
+    def sample_uniform(self, min_max=500) -> LatticePoint:
+        """Uniformly sample a point from a finite range of the lattice.
 
-        return LatticePoint(self, coords)
+        Args:
+            min_max (int, optional): Minimum and maximum coordinate to sample
+                from. Defaults to 500.
+
+        Returns:
+            LatticePoint: Uniformly sampled lattice point.
+        """
+        coords = [randint(-min_max, min_max) for _ in range(self.dim)]
+        coords_np = np.array(coords)
+
+        return LatticePoint(self, coords_np)
 
 class IntegerLattice(Lattice):
+    """The Z^n lattice."""
+
     def __init__(self, dim=2):
+        """Instantiate a [dim]-dimensional integer lattice. Defaults to Z^2."""
         self.basis = np.identity(dim)
         self.dim = dim
 
-    def sample_dgd(self, s=10, t=5):
-        coords = np.array([self._sample_dgd_single(s, t) for _ in range(self.dim)])
-        return LatticePoint(self, coords)
+    def sample_dgd(self, s=10, t=5) -> LatticePoint:
+        """Sample a point from this lattice according to the Discrete Gaussian
+        Distribution.
 
-    def _sample_dgd_single(self, s=10, t=5):
+        Args:
+            s (int, optional): The "standard deviation" of the Discrete
+                Gaussian. Defaults to 10.
+            t (int, optional): The sampling scale factor. Defaults to 5.
+        """
+        coords = [self._sample_dgd_single(s, t) for _ in range(self.dim)]
+        coords_np = np.array(coords)
+
+        return LatticePoint(self, coords_np)
+
+    def _sample_dgd_single(self, s=10, t=5) -> int:
+        """Sample a single coordinate for the Discrete Gaussian."""
         while True:
             z = randint(-t*s, t*s)
-            if np.exp(-np.pi * z**2 / s**2) <= np.random.rand():
+            if np.exp(-np.pi * z**2 / s**2) <= random():
                 break
+    
         return z
-
-
-class LatticePoint:
-    def __init__(self, lattice, coords):
-        self.lattice = lattice
-        self.coords = coords
-
-    def __str__(self):
-        return str(self.vec)
-
-    def __eq__(self, other):
-        return self.coords == other.coords
-
-    def __call__(self):
-        ...
-
-    @property
-    def vec(self):
-        return self.lattice.basis @ self.coords
-
-    @property
-    def norm(self):
-        return np.linalg.norm(self.vec)
