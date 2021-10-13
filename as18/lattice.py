@@ -100,7 +100,7 @@ class IntegerLattice(Lattice):
 class RealLattice(Lattice):
     """The R^n lattice."""
 
-    def sample_dgd(self, s=20) -> LatticePoint:
+    def sample_dgd(self, s=10) -> LatticePoint:
         """Sample a point from this lattice according to the Discrete Gaussian
         Distribution.
 

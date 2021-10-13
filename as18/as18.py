@@ -98,7 +98,7 @@ def as_18(dim=2, N=1000, max_iters=50) -> LatticePoint:
     lattice = RealLattice(basis)
 
     points = [lattice.sample_dgd() for _ in range(N)]
-    # print('Points:\n', [point for point in points])
+    print('Points:\n', [point for point in points[:10]])
 
     # Perform iterations
     for _ in range(max_iters):
