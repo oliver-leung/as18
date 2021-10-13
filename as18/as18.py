@@ -101,16 +101,21 @@ def as_18(dim=2, N=1000, max_iters=50) -> LatticePoint:
     # Perform iterations
     for _ in range(max_iters):
         new_points = as18_iter(points)
+
+        # Stop iteration if we ran out of points
         if new_points == []:
             print('Warning: did not start with enough points')
             break
+
         new_points_norms = [pt.norm ** 2 for pt in new_points]
         new_points_norms_means = np.mean(new_points_norms)
         print('Average of square norms:', new_points_norms_means)
         # print('New Points:', [point for point in new_points])
 
+        # Stop iteration if we've zeroed out all of the vectors
         if new_points_norms_means == 0:
             break
+        
         points = new_points
 
     return shortest(points)

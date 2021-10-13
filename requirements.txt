@@ -3,3 +3,4 @@ pip
 rope
 pylint
 autopep8
+pytest

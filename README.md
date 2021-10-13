@@ -18,3 +18,6 @@ deactivate # Leave the venv
 ```bash
 python as18/as18.py
 ```
+
+## Test functions
+Simply run `pytest` in your terminal.

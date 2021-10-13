@@ -1,10 +1,8 @@
 import numpy as np
 from random import randint, random
 from abc import ABC
+from utility import gram_schmidt
 
-def lin_ind(basis: np.ndarray) -> bool:
-    """Returns whether the input basis is linearly independent. (Unimplemented)"""
-    return False
 
 class LatticePoint:
     # TODO: Allow instantiation from just a vector and a basis, ensuring that
@@ -55,6 +53,15 @@ class Lattice(ABC):
 
         return LatticePoint(self, coords_np)
 
+    def _sample_dgd_z(self, s=10, t=5) -> int:
+        """Sample a single integer coordinate for the Discrete Gaussian."""
+        while True:
+            z = randint(-t*s, t*s)
+            if np.exp(-np.pi * z**2 / s**2) <= random():
+                break
+
+        return z
+
 class IntegerLattice(Lattice):
     """The Z^n lattice."""
 
@@ -72,16 +79,24 @@ class IntegerLattice(Lattice):
                 Gaussian. Defaults to 10.
             t (int, optional): The sampling scale factor. Defaults to 5.
         """
-        coords = [self._sample_dgd_single(s, t) for _ in range(self.dim)]
+        coords = [super()._sample_dgd_z(s, t) for _ in range(self.dim)]
         coords_np = np.array(coords)
 
         return LatticePoint(self.basis, coords_np)
 
-    def _sample_dgd_single(self, s=10, t=5) -> int:
-        """Sample a single coordinate for the Discrete Gaussian."""
-        while True:
-            z = randint(-t*s, t*s)
-            if np.exp(-np.pi * z**2 / s**2) <= random():
-                break
-    
-        return z
+
+class RealLattice(Lattice):
+    """The R^n lattice."""
+
+    def sample_dgd(self, s=10) -> LatticePoint:
+        V = np.zeros((self.dim + 1, self.dim))
+        B_t = gram_schmidt(self.basis)
+
+        for i in reversed(range(self.dim)):
+            s_p = s / np.linalg.norm(B_t[i])
+            assert s_p > 0
+            z = self._sample_dgd_z(s=s_p)
+
+            V[i] = V[i + 1] + B_t[i] * z
+            
+        return V[0]
