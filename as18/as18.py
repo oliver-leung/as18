@@ -1,4 +1,4 @@
-from lattice import Lattice, LatticePoint, IntegerLattice
+from lattice import RealLattice, LatticePoint, IntegerLattice
 import numpy as np
 from numpy import linalg as LA
 from typing import List
@@ -93,7 +93,9 @@ def as18_iter(points: List[LatticePoint]) -> List[LatticePoint]:
 
 
 def as_18(dim=2, N=1000, max_iters=50) -> LatticePoint:
-    lattice = IntegerLattice(dim)
+    # lattice = IntegerLattice(dim)
+    basis = np.array([[1, 1], [1, -1]])
+    lattice = RealLattice(basis)
 
     points = [lattice.sample_dgd() for _ in range(N)]
     # print('Points:\n', [point for point in points])

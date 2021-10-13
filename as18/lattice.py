@@ -1,7 +1,7 @@
 import numpy as np
 from random import randint, random
 from abc import ABC
-from as18.utility import gram_schmidt
+from utility import gram_schmidt
 
 
 class LatticePoint:
@@ -100,7 +100,7 @@ class IntegerLattice(Lattice):
 class RealLattice(Lattice):
     """The R^n lattice."""
 
-    def sample_dgd(self, s=10) -> LatticePoint:
+    def sample_dgd(self, s=20) -> LatticePoint:
         """Sample a point from this lattice according to the Discrete Gaussian
         Distribution.
 
@@ -112,7 +112,7 @@ class RealLattice(Lattice):
         B_t = gram_schmidt(self.basis)
 
         for i in reversed(range(self.dim)):
-            s_p = s / np.linalg.norm(B_t[i])
+            s_p = int(s / np.linalg.norm(B_t[i]))
             z = self._sample_dgd_z(s=s_p)
 
             V[i] = V[i + 1] + self.basis[i] * z
