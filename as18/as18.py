@@ -94,7 +94,7 @@ def as18_iter(points: List[LatticePoint]) -> List[LatticePoint]:
 
 def as_18(dim=2, N=1000, max_iters=50) -> LatticePoint:
     # lattice = IntegerLattice(dim)
-    basis = np.array([[1, 1], [1, -1]])
+    basis = np.array([[1, 2, 3], [4, 5, 6], [7, 8, -9]])
     lattice = RealLattice(basis)
 
     points = [lattice.sample_dgd() for _ in range(N)]
