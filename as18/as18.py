@@ -13,7 +13,7 @@ def avg(p1: LatticePoint, p2: LatticePoint) -> LatticePoint:
 
     coords = np.mean([p1.coords, p2.coords], axis=0)
     # TODO: Check if coords are still integers.
-    point = LatticePoint(p1.basis, coords)
+    point = LatticePoint(basis=p1.basis, coords=coords)
 
     return point
 
@@ -26,7 +26,7 @@ def diff_avg(p1: LatticePoint, p2: LatticePoint) -> LatticePoint:
 
     coords = (p1.coords - p2.coords) / 2
     # TODO: Check if coords are still integers.
-    point = LatticePoint(p1.basis, coords)
+    point = LatticePoint(basis=p1.basis, coords=coords)
 
     return point
 

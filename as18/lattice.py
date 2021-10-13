@@ -1,16 +1,28 @@
 import numpy as np
 from random import randint, random
 from abc import ABC
-from utility import gram_schmidt
+from as18.utility import gram_schmidt
 
 
 class LatticePoint:
-    # TODO: Allow instantiation from just a vector and a basis, ensuring that
-    # that the vector actually is in the lattice.
-    def __init__(self, basis: np.ndarray, coords: np.ndarray):
+    def __init__(self, basis: np.ndarray, coords: np.ndarray = None, vec: np.ndarray = None):
+        if coords is None and vec is None:
+            raise ValueError("Either coords or vec must be specified.")
+        if coords is not None and vec is not None:
+            raise ValueError("Only one of coords or vec can be specified.")
+        
         self.basis = basis
-        self.coords = coords
-        self.dim = coords.size
+        self.dim = basis.shape[0]
+
+        if coords is not None:
+            self.coords = coords
+
+        elif vec is not None:
+            self.coords = np.linalg.solve(self.basis.T, vec)
+
+            coords_int = self.coords.astype(int)
+            if not np.isclose(self.coords, coords_int).all():
+                raise ValueError("Vector is not in the lattice.")
 
     def __repr__(self):
         return str(self.vec)
@@ -23,7 +35,7 @@ class LatticePoint:
 
     @property
     def vec(self) -> np.ndarray:
-        return self.basis @ self.coords
+        return self.basis.T @ self.coords
 
     @property
     def norm(self) -> float:
@@ -51,7 +63,7 @@ class Lattice(ABC):
         coords = [randint(-min_max, min_max) for _ in range(self.dim)]
         coords_np = np.array(coords)
 
-        return LatticePoint(self, coords_np)
+        return LatticePoint(basis=self.basis, coords=coords_np)
 
     def _sample_dgd_z(self, s=10, t=5) -> int:
         """Sample a single integer coordinate for the Discrete Gaussian."""
@@ -82,21 +94,27 @@ class IntegerLattice(Lattice):
         coords = [super()._sample_dgd_z(s, t) for _ in range(self.dim)]
         coords_np = np.array(coords)
 
-        return LatticePoint(self.basis, coords_np)
+        return LatticePoint(basis=self.basis, coords=coords_np)
 
 
 class RealLattice(Lattice):
     """The R^n lattice."""
 
     def sample_dgd(self, s=10) -> LatticePoint:
+        """Sample a point from this lattice according to the Discrete Gaussian
+        Distribution.
+
+        Args:
+            s (int, optional): The "standard deviation" of the Discrete
+                Gaussian. Defaults to 10.
+        """
         V = np.zeros((self.dim + 1, self.dim))
         B_t = gram_schmidt(self.basis)
 
         for i in reversed(range(self.dim)):
             s_p = s / np.linalg.norm(B_t[i])
-            assert s_p > 0
             z = self._sample_dgd_z(s=s_p)
 
-            V[i] = V[i + 1] + B_t[i] * z
-            
-        return V[0]
+            V[i] = V[i + 1] + self.basis[i] * z
+
+        return LatticePoint(basis=self.basis, vec=V[0])
