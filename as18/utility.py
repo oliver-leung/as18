@@ -3,7 +3,7 @@ import numpy as np
 
 def lin_ind(basis: np.ndarray) -> bool:
     """Returns whether the input basis is linearly independent. (Unimplemented)"""
-    return False
+    ...
 
 
 def gram_schmidt(B: np.ndarray) -> np.ndarray:

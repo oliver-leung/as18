@@ -10,7 +10,7 @@ class LatticePoint:
             raise ValueError("Either coords or vec must be specified.")
         if coords is not None and vec is not None:
             raise ValueError("Only one of coords or vec can be specified.")
-        
+
         self.basis = basis
         self.dim = basis.shape[0]
 
@@ -41,6 +41,7 @@ class LatticePoint:
     def norm(self) -> float:
         return np.linalg.norm(self.vec)
 
+
 class Lattice(ABC):
     """An abstract class representing a lattice."""
 
@@ -68,17 +69,19 @@ class Lattice(ABC):
     def _sample_dgd_z(self, s=10, t=5) -> int:
         """Sample a single integer coordinate for the Discrete Gaussian."""
         while True:
-            z = randint(-t*s, t*s)
-            if np.exp(-np.pi * z**2 / s**2) <= random():
+            z = randint(-t * s, t * s)
+            if np.exp(-np.pi * z ** 2 / s ** 2) <= random():
                 break
 
         return z
+
 
 class IntegerLattice(Lattice):
     """The Z^n lattice."""
 
     def __init__(self, dim=2):
         """Instantiate a [dim]-dimensional integer lattice. Defaults to Z^2."""
+        super().__init__(np.array([]))
         self.basis = np.identity(dim)
         self.dim = dim
 

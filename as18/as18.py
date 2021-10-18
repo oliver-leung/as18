@@ -41,9 +41,9 @@ def shortest(points: List[LatticePoint]) -> LatticePoint:
         point for point in points if not np.array_equal(point.vec, zeros)]
     nonzero_points_norms = [point.norm for point in nonzero_points]
     shortest_point_arg = np.argmin(nonzero_points_norms)
-    shortest_point = nonzero_points[shortest_point_arg]
+    shortest_pt = nonzero_points[shortest_point_arg]
 
-    return shortest_point
+    return shortest_pt
 
 
 def as18_iter(points: List[LatticePoint]) -> List[LatticePoint]:
@@ -105,7 +105,7 @@ def as_18(dim=2, N=1000, max_iters=50) -> LatticePoint:
         new_points = as18_iter(points)
 
         # Stop iteration if we ran out of points
-        if new_points == []:
+        if not new_points:
             print('Warning: did not start with enough points')
             break
 
