@@ -1,3 +1,5 @@
+from matplotlib import pyplot as plt
+
 from lattice import RealLattice, LatticePoint, IntegerLattice
 import numpy as np
 from numpy import linalg as LA
@@ -92,6 +94,17 @@ def as18_iter(points: List[LatticePoint]) -> List[LatticePoint]:
     return new_points
 
 
+def visualize(lattice_pts: List[LatticePoint]) -> None:
+    if lattice_pts[0].dim > 3:
+        raise ValueError('You can only plot lattices in R^3 or of lower dimensionality.')
+    vectors = np.array([pt.vec for pt in lattice_pts]).T
+
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
+    ax.scatter(*vectors)
+    plt.pause(0.05)
+
+
 def as_18(dim=2, N=1000, max_iters=50) -> LatticePoint:
     # lattice = IntegerLattice(dim)
     basis = np.array([[1, 5, 3], [4, 5, -3], [7, 10, -9]])
@@ -101,10 +114,12 @@ def as_18(dim=2, N=1000, max_iters=50) -> LatticePoint:
 
     points = [lattice.sample_dgd() for _ in range(N)]
     print('Points:\n', [point for point in points[:10]])
+    visualize(points)
 
     # Perform iterations
     for _ in range(max_iters):
         new_points = as18_iter(points)
+        visualize(new_points)
 
         # Stop iteration if we ran out of points
         if not new_points:
@@ -119,8 +134,10 @@ def as_18(dim=2, N=1000, max_iters=50) -> LatticePoint:
         # Stop iteration if we've zeroed out all of the vectors
         if new_points_norms_means == 0:
             break
-        
+
         points = new_points
+
+    plt.show()
 
     return shortest(points)
 

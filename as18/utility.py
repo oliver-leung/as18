@@ -1,6 +1,5 @@
 from math import ceil, floor
 from random import randint, random
-
 import numpy as np
 
 
@@ -44,3 +43,4 @@ def validate_basis(basis: np.ndarray):
         raise ValueError(f'This basis is linearly dependent: \n{basis}\n')
     if np.linalg.det(basis) == 0:
         raise ValueError(f'This basis is singular: \n{basis}\n')
+
