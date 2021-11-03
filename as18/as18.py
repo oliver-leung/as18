@@ -4,7 +4,7 @@ from typing import List
 import numpy as np
 from matplotlib import pyplot as plt
 
-from lattice import Lattice, RealLattice, LatticePoint, IntegerLattice
+from lattice import Lattice, RealLattice, LatticePoint, IntegerLattice, QaryLattice
 
 
 def avg(p1: LatticePoint, p2: LatticePoint) -> LatticePoint:
@@ -78,10 +78,12 @@ def as18_iter(points: List[LatticePoint]) -> List[LatticePoint]:
     return new_points
 
 
-def visualize(lattice_pts: List[LatticePoint]) -> None:
+def visualize(lattice_pts: List[LatticePoint], noisy=True) -> None:
     if lattice_pts[0].dim > 3:
         raise ValueError('You can only plot lattices in R^3 or of lower dimensionality.')
     vectors = np.array([pt.vec for pt in lattice_pts]).T
+    if noisy:
+        vectors = np.array([vec + np.random.normal(0, 0.1, len(lattice_pts)) for vec in vectors])
 
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
@@ -89,15 +91,15 @@ def visualize(lattice_pts: List[LatticePoint]) -> None:
     plt.show()
 
 
-def as_18(lattice: Lattice, N=1000, max_iters=50) -> LatticePoint:
+def as18(lattice: Lattice, N=1000, max_iters=50) -> LatticePoint:
     points = [lattice.sample_dgd() for _ in range(N)]
-    print('Points:\n', [point for point in points[:10]])
-    # visualize(points)
+    # print('Points:\n', [point for point in points[:10]])
 
     # Perform iterations
     for _ in range(max_iters):
+        if lattice.dim <= 3:
+            visualize(points)
         new_points = as18_iter(points)
-        # visualize(new_points)
 
         # Stop iteration if we ran out of points
         if not new_points:
@@ -122,7 +124,7 @@ if __name__ == '__main__':
     start = time()
     basis = np.array([[1, 5, 4], [4, 5, -3], [7, 10, -9]])
     lat = RealLattice(basis)
-    lat = IntegerLattice(dim=6)
-    shortest_point = as_18(lattice=lat, N=10000, max_iters=1000)
+    lat = IntegerLattice(dim=7)
+    shortest_point = as18(lattice=lat, N=1000, max_iters=1000)
     print('Shortest point:', shortest_point)
     print('Took', time() - start, 'seconds')
