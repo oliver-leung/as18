@@ -1,3 +1,5 @@
+import abc
+
 import numpy as np
 from random import randint
 from abc import ABC
@@ -68,6 +70,10 @@ class Lattice(ABC):
         coords_np = np.array(coords)
 
         return LatticePoint(basis=self.basis, coords=coords_np)
+
+    @abc.abstractmethod
+    def sample_dgd(self) -> LatticePoint:
+        raise NotImplementedError("Can't sample from DGD over this lattice")
 
 
 class IntegerLattice(Lattice):
