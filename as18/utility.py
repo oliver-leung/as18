@@ -56,8 +56,7 @@ def validate_basis(vecs: np.ndarray):
         raise ValueError(f'This basis is not square, or is not a 2-dimensional matrix: \n{vecs}\n')
 
     _, Sigma, _ = np.linalg.svd(vecs)
-    singular_values = Sigma.diagonal()
-    if 0 in singular_values:
+    if 0 in Sigma:
         raise ValueError(f'This basis is linearly dependent: \n{vecs}\n')
 
     if np.linalg.det(vecs) == 0:
