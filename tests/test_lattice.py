@@ -1,5 +1,7 @@
 import numpy as np
-from as18.lattice import RealLattice, LatticePoint
+
+from as18.lattice import LatticePoint
+
 
 def test_lattice():
     basis = np.array([[2, -1], [1, 1]])
