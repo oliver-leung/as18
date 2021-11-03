@@ -47,7 +47,6 @@ class LatticePoint:
 class Lattice(ABC):
     """An abstract class representing a lattice."""
 
-    # TODO: Ensure that the basis is linearly independent and is square.
     def __init__(self, basis: np.ndarray):
         """Instantiate a Lattice given by a [basis]."""
         validate_basis(basis)
@@ -119,3 +118,26 @@ class RealLattice(Lattice):
             c = c - (z_p[i] * self.basis[i])
 
         return LatticePoint(basis=self.basis, coords=z_p)
+
+
+class QaryLattice(RealLattice):
+    """A lattice subset of Z^n; For some integer vector a in Z^n mod q, the q-ary lattice is the set of all points
+    such that the inner product with a is zero. Note that we fix a_n = 1 in this implementation.
+    """
+
+    def __init__(self, q: int = 10 ** 6, dim: int = None, a: np.ndarray = None):
+        if dim is not None and a is not None:
+            raise ValueError('Only one of dim and a may be specified.')
+        elif dim is None and a is None:
+            raise ValueError('Either dim or a must be specified.')
+        elif dim is not None and a is None:
+            a = np.random.randint(0, q-1, size=dim-1)
+        elif dim is None and a is not None:
+            dim = a.shape[0] + 1
+
+        a = np.append(a, q)
+        basis = np.identity(dim)
+        basis[-1] = a
+        basis = basis.T
+
+        super().__init__(basis)
