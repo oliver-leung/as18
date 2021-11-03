@@ -1,10 +1,10 @@
+from time import time
+from typing import List
+
+import numpy as np
 from matplotlib import pyplot as plt
 
-from lattice import RealLattice, LatticePoint, IntegerLattice
-import numpy as np
-from numpy import linalg as LA
-from typing import List
-from time import time
+from lattice import Lattice, RealLattice, LatticePoint, IntegerLattice
 
 
 def avg(p1: LatticePoint, p2: LatticePoint) -> LatticePoint:
@@ -34,23 +34,21 @@ def diff_avg(p1: LatticePoint, p2: LatticePoint) -> LatticePoint:
 
 
 def shortest(points: List[LatticePoint]) -> LatticePoint:
-    """Find the shortest point within a list of points."""
-    # print([point for point in points])
+    """Find the shortest point within a list of points with the same dimensionality."""
     dim = points[0].dim
     zeros = np.zeros(dim)
 
-    nonzero_points = [
-        point for point in points if not np.array_equal(point.vec, zeros)]
-    nonzero_points_norms = [point.norm for point in nonzero_points]
-    shortest_point_arg = np.argmin(nonzero_points_norms)
-    shortest_pt = nonzero_points[shortest_point_arg]
+    nonzero_pts = [pt for pt in points if not np.array_equal(pt.vec, zeros)]
+    nonzero_pts_norms = [pt.norm for pt in nonzero_pts]
+    shortest_pt_arg = np.argmin(nonzero_pts_norms)
+    shortest_pt = nonzero_pts[shortest_pt_arg]
 
     return shortest_pt
 
 
 def as18_iter(points: List[LatticePoint]) -> List[LatticePoint]:
     """Perform one iteration of the averaging algorithm."""
-    cp_to_vec = {}
+    cp_to_vec = {}  # Mapping from Coord Parities to vector lists
 
     # Bin according to mod 2L
     for point in points:
@@ -62,34 +60,20 @@ def as18_iter(points: List[LatticePoint]) -> List[LatticePoint]:
         else:
             cp_to_vec[parity] = [point]
 
-    # Print elements in each bin
-    # for key, val in cp_to_vec.items():
-    #     print(key + ':')
-    #     for pt in val:
-    #         print(pt)
-
-    pairs = []
-    new_points = []
-
     # Naively select pairs within each coset
+    pairs = []
     for _, val in cp_to_vec.items():
         while len(val) > 1:
             p1 = val.pop(0)
             p2 = val.pop(0)
-            pair = (p1, p2)
-            pairs.append(pair)
-
-        # optionally keep unpaired vectors
-        # new_points += val
+            pairs.append((p1, p2))
 
     # Get the average of each pair
+    new_points = []
     for p1, p2 in pairs:
-        # print(p1, p2)
-        new_pt = avg(p1, p2)
-        new_pt_2 = diff_avg(p1, p2)
-        # print(new_pt)
-        new_points.append(new_pt)
-        new_points.append(new_pt_2)
+        pts_avg = avg(p1, p2)
+        pts_diff_avg = diff_avg(p1, p2)
+        new_points += [pts_avg, pts_diff_avg]
 
     return new_points
 
@@ -102,24 +86,18 @@ def visualize(lattice_pts: List[LatticePoint]) -> None:
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
     ax.scatter(*vectors)
-    plt.pause(0.05)
+    plt.show()
 
 
-def as_18(dim=2, N=1000, max_iters=50) -> LatticePoint:
-    # lattice = IntegerLattice(dim)
-    basis = np.array([[1, 5, 3], [4, 5, -3], [7, 10, -9]])
-    # basis = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-    # basis = np.array([[1, 0], [2, 0]])
-    lattice = RealLattice(basis)
-
+def as_18(lattice: Lattice, N=1000, max_iters=50) -> LatticePoint:
     points = [lattice.sample_dgd() for _ in range(N)]
     print('Points:\n', [point for point in points[:10]])
-    visualize(points)
+    # visualize(points)
 
     # Perform iterations
     for _ in range(max_iters):
         new_points = as18_iter(points)
-        visualize(new_points)
+        # visualize(new_points)
 
         # Stop iteration if we ran out of points
         if not new_points:
@@ -137,13 +115,14 @@ def as_18(dim=2, N=1000, max_iters=50) -> LatticePoint:
 
         points = new_points
 
-    plt.show()
-
     return shortest(points)
 
 
 if __name__ == '__main__':
     start = time()
-    shortest_point = as_18(dim=10, N=10000, max_iters=1000)
+    basis = np.array([[1, 5, 4], [4, 5, -3], [7, 10, -9]])
+    lat = RealLattice(basis)
+    lat = IntegerLattice(dim=6)
+    shortest_point = as_18(lattice=lat, N=10000, max_iters=1000)
     print('Shortest point:', shortest_point)
     print('Took', time() - start, 'seconds')
