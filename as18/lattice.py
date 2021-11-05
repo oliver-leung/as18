@@ -132,18 +132,22 @@ class QaryLattice(RealLattice):
     """
 
     def __init__(self, q: int = 10 ** 6, dim: int = None, a: np.ndarray = None):
-        if dim is not None and a is not None:
+        if dim and a:
             raise ValueError('Only one of dim and a may be specified.')
-        elif dim is None and a is None:
+        elif not dim and not a:
             raise ValueError('Either dim or a must be specified.')
-        elif dim is not None and a is None:
+        elif dim and not a:
             a = np.random.randint(0, q-1, size=dim-1)
-        elif dim is None and a is not None:
+        elif not dim and a:
             dim = a.shape[0] + 1
 
         a = np.append(a, q)
         basis = np.identity(dim)
         basis[-1] = a
         basis = basis.T
+        self.q = q
 
         super().__init__(basis)
+
+    def sample_dgd(self, s=10, c: np.ndarray = None) -> LatticePoint:
+        return super().sample_dgd(10 * self.q, c)

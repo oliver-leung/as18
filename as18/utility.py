@@ -44,7 +44,9 @@ def sample_dgd_Z(s: float = 10, t: float = 5, c: float = 0) -> int:
 
         # Accept the sampled integer with probability rho_s(z - c)
         # if random() <= np.exp(-np.pi * (z - c) ** 2 / s ** 2):
-        if random() <= gaussian(s, z - c):
+        rand_num = random()
+        rho = gaussian(s, z - c)
+        if rand_num <= rho:
             break
 
     return z

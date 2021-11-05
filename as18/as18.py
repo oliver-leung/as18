@@ -85,13 +85,16 @@ def visualize(lattice_pts: List[LatticePoint], noisy=True) -> None:
     if noisy:
         vectors = np.array([vec + np.random.normal(0, 0.1, len(lattice_pts)) for vec in vectors])
 
-    fig = plt.figure()
+    fig = plt.figure(num=0)
     ax = fig.add_subplot(projection='3d')
     ax.scatter(*vectors)
-    plt.show()
+    plt.pause(0.5)
 
 
 def as18(lattice: Lattice, N=1000, max_iters=50) -> LatticePoint:
+    # Prepare MPL
+    plt.ion()
+
     points = [lattice.sample_dgd() for _ in range(N)]
     # print('Points:\n', [point for point in points[:10]])
 
@@ -123,8 +126,8 @@ def as18(lattice: Lattice, N=1000, max_iters=50) -> LatticePoint:
 if __name__ == '__main__':
     start = time()
     basis = np.array([[1, 5, 4], [4, 5, -3], [7, 10, -9]])
-    lat = RealLattice(basis)
-    lat = IntegerLattice(dim=7)
+    # lat = RealLattice(basis)
+    lat = QaryLattice(q=100, dim=3)
     shortest_point = as18(lattice=lat, N=1000, max_iters=1000)
     print('Shortest point:', shortest_point)
     print('Took', time() - start, 'seconds')
