@@ -37,6 +37,29 @@ class LatticePoint:
     def __eq__(self, other):
         return np.array_equal(self.vec, other.vec)
 
+    def __add__(self, other):
+        assert np.array_equal(self.basis, other.basis)
+        coords = self.coords + other.coords
+        return LatticePoint(self.basis, coords)
+
+    def __sub__(self, other):
+        assert np.array_equal(self.basis, other.basis)
+        coords = self.coords - other.coords
+        return LatticePoint(self.basis, coords)
+
+    def __neg__(self):
+        return LatticePoint(self.basis, -self.coords)
+
+    def __truediv__(self, other):
+        if isinstance(other, int) or isinstance(other, float):
+            coords = self.coords / other
+            return LatticePoint(self.basis, coords)
+
+        elif isinstance(other, LatticePoint):
+            raise ValueError("Can't divide two LatticePoints")
+        else:
+            raise ValueError
+
     @property
     def vec(self) -> np.ndarray:
         return self.basis.T @ self.coords
@@ -137,7 +160,7 @@ class QaryLattice(RealLattice):
         elif not dim and not a:
             raise ValueError('Either dim or a must be specified.')
         elif dim and not a:
-            a = np.random.randint(0, q-1, size=dim-1)
+            a = np.random.randint(0, q - 1, size=dim - 1)
         elif not dim and a:
             dim = a.shape[0] + 1
 
