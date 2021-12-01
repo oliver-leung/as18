@@ -1,8 +1,9 @@
-from math import ceil, floor
-from random import randint, random
-from typing import Union
+from typing import Union, List
 
 import numpy as np
+from matplotlib import pyplot as plt
+
+from lattice import LatticePoint
 
 
 def gaussian(s: float, x: Union[float, np.ndarray]) -> float:
@@ -27,31 +28,6 @@ def gram_schmidt(B: np.ndarray) -> np.ndarray:
     return B_t
 
 
-def sample_dgd_Z(s: float = 10, t: float = 5, c: float = 0) -> int:
-    """
-    Sample from the discrete Gaussian over some integer range.
-
-    Args:
-        s (float, optional): The Gaussian parameter (i.e. standard deviation).
-        t (float, optional): The scaling factor, which determines the range of sampling.
-        c (float, optional): The center around which to sample the discrete Gaussian.
-    """
-    while True:
-        # Randomly sample an integer from the range. Note that we round the range "outwardly".
-        max_int = ceil(c + t * s)
-        min_int = floor(c - t * s)
-        z = randint(min_int, max_int)
-
-        # Accept the sampled integer with probability rho_s(z - c)
-        # if random() <= np.exp(-np.pi * (z - c) ** 2 / s ** 2):
-        rand_num = random()
-        rho = gaussian(s, z - c)
-        if rand_num <= rho:
-            break
-
-    return z
-
-
 def validate_basis(vecs: np.ndarray):
     """Ensure that [vecs] is a linearly-independent, spanning basis."""
     if vecs.shape[0] != vecs.shape[1] or vecs.ndim != 2:
@@ -63,3 +39,41 @@ def validate_basis(vecs: np.ndarray):
 
     if np.linalg.det(vecs) == 0:
         raise ValueError(f'This basis is singular: \n{vecs}\n')
+
+
+def shortest(points: List[LatticePoint]) -> LatticePoint:
+    """Find the shortest point within a list of points with the same dimensionality."""
+    dim = points[0].dim
+    zeros = np.zeros(dim)
+
+    nonzero_pts = [pt for pt in points if not np.array_equal(pt.vec, zeros)]
+    nonzero_pts_norms = [pt.norm for pt in nonzero_pts]
+    shortest_pt_arg = np.argmin(nonzero_pts_norms)
+    shortest_pt = nonzero_pts[shortest_pt_arg]
+
+    return shortest_pt
+
+
+def bin_by_parity(points):
+    cp_to_vec = {}  # Mapping from Coord Parities to vector lists
+    # Bin according to mod 2L
+    for point in points:
+        coords_str = (point.coords % 2).astype(str)
+        parity = ''.join(coords_str)
+
+        if parity in cp_to_vec:
+            cp_to_vec[parity].append(point)
+        else:
+            cp_to_vec[parity] = [point]
+    return cp_to_vec
+
+
+def visualize(lattice_pts: List[LatticePoint], noisy=True) -> None:
+    vectors = np.array([pt.vec for pt in lattice_pts]).T
+    if noisy:
+        vectors = np.array([vec + np.random.normal(0, 0.1, len(lattice_pts)) for vec in vectors])
+
+    fig = plt.figure(num=0)
+    ax = fig.add_subplot(projection='3d')
+    ax.scatter(*(vectors[:3]))
+    plt.pause(0.5)

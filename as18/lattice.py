@@ -1,9 +1,10 @@
 import abc
+from math import ceil, floor
 
 import numpy as np
-from random import randint
+from random import randint, random
 from abc import ABC
-from utility import gram_schmidt, sample_dgd_Z, validate_basis
+from utility import gram_schmidt, validate_basis, gaussian
 
 
 class LatticePoint:
@@ -18,15 +19,22 @@ class LatticePoint:
 
         if coords is not None:
             self.coords = coords
-
         elif vec is not None:
             self.coords = np.linalg.solve(self.basis.T, vec)
 
-            coords_int = np.rint(self.coords)
-            if not np.isclose(self.coords, coords_int).all():
-                raise ValueError("Vector is not in the lattice.")
+        coords_int = np.rint(self.coords)
+        if not np.isclose(self.coords, coords_int).all():
+            raise ValueError("Vector is not in the lattice.")
 
-            self.coords = coords_int
+        self.coords = coords_int
+
+    @classmethod
+    def from_coords(cls, basis, coords):
+        return cls(basis, coords=coords)
+
+    @classmethod
+    def from_vec(cls, basis, vec):
+        return cls(basis, vec=vec)
 
     def __repr__(self):
         return str(self.vec)
@@ -173,4 +181,31 @@ class QaryLattice(RealLattice):
         super().__init__(basis)
 
     def sample_dgd(self, s=10, c: np.ndarray = None) -> LatticePoint:
-        return super().sample_dgd(10 * self.q, c)
+        if s is None:
+            s = 10 * self.q
+        return super().sample_dgd(s, c)
+
+
+def sample_dgd_Z(s: float = 10, t: float = 5, c: float = 0) -> int:
+    """
+    Sample from the discrete Gaussian over some integer range (i.e. the Z lattice).
+
+    Args:
+        s (float, optional): The Gaussian parameter (i.e. standard deviation).
+        t (float, optional): The scaling factor, which determines the range of sampling.
+        c (float, optional): The center around which to sample the discrete Gaussian.
+    """
+    while True:
+        # Randomly sample an integer from the range. Note that we round the range "outwardly".
+        max_int = ceil(c + t * s)
+        min_int = floor(c - t * s)
+        z = randint(min_int, max_int)
+
+        # Accept the sampled integer with probability rho_s(z - c)
+        # if random() <= np.exp(-np.pi * (z - c) ** 2 / s ** 2):
+        rand_num = random()
+        rho = gaussian(s, z - c)
+        if rand_num <= rho:
+            break
+
+    return z
