@@ -1,9 +1,6 @@
-from typing import Union, List
+from typing import Union, List, Tuple
 
 import numpy as np
-from matplotlib import pyplot as plt
-
-from lattice import LatticePoint
 
 
 def gaussian(s: float, x: Union[float, np.ndarray]) -> float:
@@ -41,39 +38,5 @@ def validate_basis(vecs: np.ndarray):
         raise ValueError(f'This basis is singular: \n{vecs}\n')
 
 
-def shortest(points: List[LatticePoint]) -> LatticePoint:
-    """Find the shortest point within a list of points with the same dimensionality."""
-    dim = points[0].dim
-    zeros = np.zeros(dim)
-
-    nonzero_pts = [pt for pt in points if not np.array_equal(pt.vec, zeros)]
-    nonzero_pts_norms = [pt.norm for pt in nonzero_pts]
-    shortest_pt_arg = np.argmin(nonzero_pts_norms)
-    shortest_pt = nonzero_pts[shortest_pt_arg]
-
-    return shortest_pt
-
-
-def bin_by_parity(points):
-    cp_to_vec = {}  # Mapping from Coord Parities to vector lists
-    # Bin according to mod 2L
-    for point in points:
-        coords_str = (point.coords % 2).astype(str)
-        parity = ''.join(coords_str)
-
-        if parity in cp_to_vec:
-            cp_to_vec[parity].append(point)
-        else:
-            cp_to_vec[parity] = [point]
-    return cp_to_vec
-
-
-def visualize(lattice_pts: List[LatticePoint], noisy=True) -> None:
-    vectors = np.array([pt.vec for pt in lattice_pts]).T
-    if noisy:
-        vectors = np.array([vec + np.random.normal(0, 0.1, len(lattice_pts)) for vec in vectors])
-
-    fig = plt.figure(num=0)
-    ax = fig.add_subplot(projection='3d')
-    ax.scatter(*(vectors[:3]))
-    plt.pause(0.5)
+def disjoint_pair(lst: List) -> List[Tuple]:
+    return list(zip(lst[::2], lst[1::2]))

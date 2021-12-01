@@ -1,49 +1,25 @@
-from collections import defaultdict
-from typing import List, Dict
+from typing import List
 
 import numpy as np
 from matplotlib import pyplot as plt
 
-from lattice import LatticePoint, Lattice
-from utility import visualize, shortest
-
-
-def partial_bin(points: List[LatticePoint], start: int, end: int, mod: int) -> Dict[str, List[LatticePoint]]:
-    cp_to_vec = defaultdict(list)  # Mapping from Coord Parities to vector lists
-
-    # Bin according to mod 2L
-    for point in points:
-        if start < end:
-            parity_coords = point.coords[start: end]
-        else:
-            parity_coords = point.coords.take(range(start, end + 4), mode='wrap')
-
-        coords_str = (parity_coords % mod).astype(int).astype(str)
-        parity = ''.join(coords_str)
-
-        cp_to_vec[parity].append(point)
-
-    return cp_to_vec
+from lattice import LatticePoint, Lattice, shortest, visualize, bin_by_coset
+from utility import disjoint_pair
 
 
 def partial_iter(points: List[LatticePoint], start: int, end: int, mod: int) -> List[LatticePoint]:
     """Perform one iteration of the averaging algorithm."""
-    cp_to_vec = partial_bin(points, start, end, mod)
+    cp_to_vec = bin_by_coset(points, start, end, mod)
 
     # Naively select pairs within each coset
     pairs = []
-    for _, val in cp_to_vec.items():
-        while len(val) > 1:
-            p1 = val.pop(0)
-            p2 = val.pop(0)
-            pairs.append((p1, p2))
+    for vecs in cp_to_vec.values():
+        pairs += disjoint_pair(vecs)
 
-    # Get the average of each pair
+    # Get the sum & difference of each pair
     new_points = []
     for p1, p2 in pairs:
-        pts_sum = p1 + p2
-        pts_diff = p1 - p2
-        new_points += [pts_sum, pts_diff]
+        new_points += [p1 + p2, p1 - p2]
 
     return new_points
 
@@ -64,7 +40,7 @@ def partial(lattice: Lattice) -> LatticePoint:
 
     points = [lattice.sample_dgd() for _ in range(N)]
     for i in range(iters):
-        visualize(points)
+        # visualize(points)
         start = int((i * k) % ldim)
         end = int((start + k) % ldim)
         # print('Binning', start, 'to', end)

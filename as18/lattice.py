@@ -1,9 +1,14 @@
 import abc
+from collections import defaultdict
 from math import ceil, floor
+from typing import List, Dict
 
 import numpy as np
 from random import randint, random
 from abc import ABC
+
+from matplotlib import pyplot as plt
+
 from utility import gram_schmidt, validate_basis, gaussian
 
 
@@ -75,6 +80,11 @@ class LatticePoint:
     @property
     def norm(self) -> float:
         return np.linalg.norm(self.vec)
+
+    @property
+    def is_zero(self) -> bool:
+        zeros = np.zeros(self.dim)
+        return np.array_equal(self.vec, zeros)
 
 
 class Lattice(ABC):
@@ -209,3 +219,55 @@ def sample_dgd_Z(s: float = 10, t: float = 5, c: float = 0) -> int:
             break
 
     return z
+
+
+def shortest(points: List[LatticePoint], with_zeros=False) -> LatticePoint:
+    """Find the shortest point within a list of points with the same dimensionality."""
+    if not with_zeros:
+        points = remove_zeros(points)
+
+    return min(points, key=lambda x: x.norm)  # Finds the minimum according to the norm
+
+
+def remove_zeros(points: List[LatticePoint]) -> List[LatticePoint]:
+    zeros = np.zeros(points[0].dim)
+
+    return [pt for pt in points if not np.array_equal(pt.vec, zeros)]
+
+
+def visualize(lattice_pts: List[LatticePoint], noisy=True) -> None:
+    vectors = np.array([pt.vec for pt in lattice_pts]).T
+    if noisy:
+        vectors = np.array([vec + np.random.normal(0, 0.1, len(lattice_pts)) for vec in vectors])
+
+    fig = plt.figure(num=0)
+    ax = fig.add_subplot(projection='3d')
+    ax.scatter(*(vectors[:3]))  # Plot the first 3 dimensions, in case the points are in higher dimensions
+    plt.pause(0.5)
+
+
+def bin_by_coset(points: List[LatticePoint], start: int = None, end: int = None, mod: int = 2)\
+        -> Dict[str, List[LatticePoint]]:
+
+    if start is None:
+        start = 0
+    if end is None:
+        if not points:  # Avoid case where points is empty
+            return {}
+        end = points[0].dim
+
+    coset_to_vecs = defaultdict(list)  # Mapping from cosets to vector lists
+
+    # Bin according to mod 2L
+    for point in points:
+        if start < end:
+            parity_coords = point.coords[start: end]
+        else:
+            parity_coords = point.coords.take(range(start, end + 4), mode='wrap')
+
+        coords_str = (parity_coords % mod).astype(int).astype(str)
+        parity = ''.join(coords_str)
+
+        coset_to_vecs[parity].append(point)
+
+    return coset_to_vecs

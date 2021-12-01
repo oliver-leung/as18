@@ -4,42 +4,36 @@ from typing import List
 import numpy as np
 from matplotlib import pyplot as plt
 
-from lattice import Lattice, LatticePoint, QaryLattice
+from lattice import Lattice, LatticePoint, QaryLattice, shortest, visualize, bin_by_coset
+from utility import disjoint_pair
 from partial import partial
-from utility import shortest, bin_by_parity, visualize
 
 
 def as18_iter(points: List[LatticePoint]) -> List[LatticePoint]:
     """Perform one iteration of the averaging algorithm."""
-    coord_parity_to_vecs = bin_by_parity(points)
-
-    # Naively select pairs within each coset
+    coord_parity_to_vecs = bin_by_coset(points)
     pairs = []
     for vecs in coord_parity_to_vecs.values():
-        pairs += list(zip(vecs[::2], vecs[1::2]))
+        pairs += disjoint_pair(vecs)
 
-    # Get the (difference-) average of each pair
+    # Get the (difference-)average of each pair
     new_points = []
     for p1, p2 in pairs:
         new_points += [
-            (p1 + p2) / 2,  # Average
-            (p1 - p2) / 2   # Difference-average
+            (p1 + p2) / 2,
+            (p1 - p2) / 2
         ]
-
     return new_points
 
 
-def as18(lattice: Lattice, N=1000, max_iters=50) -> LatticePoint:
+def as18(lattice: Lattice, N=1000) -> LatticePoint:
     # Prepare MPL
     plt.ion()
 
     points = [lattice.sample_dgd() for _ in range(N)]
-    # print('Points:\n', [point for point in points[:10]])
 
-    # Perform iterations
-    for _ in range(max_iters):
-        # if lattice.dim <= 3:
-        visualize(points)
+    while True:
+        # visualize(points)
         new_points = as18_iter(points)
 
         # Stop iteration if we ran out of points
@@ -67,7 +61,7 @@ if __name__ == '__main__':
     # lat = RealLattice(basis)
     lat = QaryLattice(q=10, dim=4)
     # lat = IntegerLattice(dim=4)
-    shortest_point = as18(lattice=lat, N=1000, max_iters=1000)
+    shortest_point = as18(lattice=lat, N=1000)
     print('Shortest point from AS18:', shortest_point)
     shortest_point = partial(lat)
     print('Shortest point from partial binning:', shortest_point)
