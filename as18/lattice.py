@@ -113,7 +113,7 @@ class Lattice(ABC):
         return LatticePoint(basis=self.basis, coords=coords_np)
 
     @abc.abstractmethod
-    def sample_dgd(self) -> LatticePoint:
+    def sample_dgd(self, *args, **kwargs) -> LatticePoint:
         raise NotImplementedError("Can't sample from DGD over this lattice")
 
 
